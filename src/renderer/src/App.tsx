@@ -1,9 +1,17 @@
-import { Button } from '@/components/ui/button'
+import { HashRouter, Routes, Route, Navigate } from 'react-router'
+import ProjectsPage from '@/pages/projects/ProjectsPage'
+import ProjectPage from '@/pages/project/ProjectPage'
+import NewProjectPage from '@/pages/new-project/NewProjectPage'
 
 export default function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
-      <Button>CostCraft works</Button>
-    </div>
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/projects" replace />} />
+        <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/projects/new" element={<NewProjectPage />} />
+        <Route path="/projects/:id" element={<ProjectPage />} />
+      </Routes>
+    </HashRouter>
   )
 }
