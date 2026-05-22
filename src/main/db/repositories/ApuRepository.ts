@@ -15,54 +15,17 @@
  */
 
 import Database from 'better-sqlite3'
+import type {
+  ApuComponentRow,
+  ApuSummary,
+  CreateApuComponentInput,
+  UpdateApuComponentInput
+} from '../../../shared/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ApuComponentType = 'material' | 'labor' | 'equipment' | 'subcontract'
 export type PriceSource = 'manual' | 'catalog' | 'inegi'
-
-export interface CreateApuComponentInput {
-  concept_id: string
-  type: ApuComponentType
-  description: string
-  unit: string
-  quantity?: number
-  unit_price?: number
-  price_source?: PriceSource
-  catalog_item_id?: string
-}
-
-export interface UpdateApuComponentInput {
-  description?: string
-  unit?: string
-  quantity?: number
-  unit_price?: number
-  price_source?: PriceSource
-  catalog_item_id?: string
-}
-
-export interface ApuComponentRow {
-  id: string
-  concept_id: string
-  type: ApuComponentType
-  description: string
-  unit: string
-  quantity: number
-  unit_price: number
-  price_source: PriceSource | null
-  catalog_item_id: string | null
-  position: number
-  created_at: string
-  updated_at: string
-}
-
-export interface ApuSummary {
-  material: number
-  labor: number
-  equipment: number
-  subcontract: number
-  total: number
-}
 
 // ─── Repository ───────────────────────────────────────────────────────────────
 

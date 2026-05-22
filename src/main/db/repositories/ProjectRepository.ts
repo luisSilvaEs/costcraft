@@ -11,20 +11,7 @@
  */
 
 import Database from 'better-sqlite3'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface CreateProjectInput {
-  title: string
-  description?: string
-  client?: string
-}
-
-export interface UpdateProjectInput {
-  title?: string
-  description?: string
-  client?: string
-}
+import type { CreateProjectInput, UpdateProjectInput } from '../../../shared/types'
 
 export interface ProjectInfoRow {
   id: number // always 1

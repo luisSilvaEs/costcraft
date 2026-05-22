@@ -11,27 +11,7 @@
  */
 
 import Database from 'better-sqlite3'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface CreatePhaseInput {
-  name: string
-  code?: string
-}
-
-export interface UpdatePhaseInput {
-  name?: string
-  code?: string
-}
-
-export interface PhaseRow {
-  id: string
-  project_id: number // always 1 (singleton project)
-  code: string | null
-  name: string
-  position: number
-  created_at: string
-}
+import type { CreatePhaseInput, PhaseRow, UpdatePhaseInput } from '../../../shared/types'
 
 // ─── Repository ───────────────────────────────────────────────────────────────
 
