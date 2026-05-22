@@ -29,3 +29,8 @@ logs
 # Cache
 .eslintcache
 *.tsbuildinfo
+
+# SQLite test artifacts
+:memory:
+:memory:-shm
+:memory:-wal
