@@ -11,28 +11,9 @@
  */
 
 import Database from 'better-sqlite3'
+import type { CreateChapterInput, UpdateChapterInput, ChapterRow } from '../../../shared/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface CreateChapterInput {
-  phase_id: string
-  name: string
-  code?: string
-}
-
-export interface UpdateChapterInput {
-  name?: string
-  code?: string
-}
-
-export interface ChapterRow {
-  id: string
-  phase_id: string
-  code: string | null
-  name: string
-  position: number
-  created_at: string
-}
 
 // ─── Repository ───────────────────────────────────────────────────────────────
 

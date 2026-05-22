@@ -14,31 +14,11 @@
 
 import Database from 'better-sqlite3'
 import { ConceptRepository } from './ConceptRepository'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface CreateExecutionEntryInput {
-  concept_id: string
-  date: string // ISO date string: 'YYYY-MM-DD'
-  quantity_executed: number
-  notes?: string
-}
-
-export interface ExecutionEntryRow {
-  id: string
-  concept_id: string
-  date: string
-  quantity_executed: number
-  notes: string | null
-  created_at: string
-}
-
-export interface ExecutionSummary {
-  quantity_budgeted: number
-  quantity_executed: number
-  quantity_remaining: number
-  progress_pct: number // 0–100, rounded to 1 decimal
-}
+import type {
+  CreateExecutionEntryInput,
+  ExecutionSummary,
+  ExecutionEntryRow
+} from '../../../shared/types'
 
 // ─── Repository ───────────────────────────────────────────────────────────────
 

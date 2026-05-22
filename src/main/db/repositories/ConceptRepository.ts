@@ -13,40 +13,7 @@
  */
 
 import Database from 'better-sqlite3'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface CreateConceptInput {
-  chapter_id: string
-  description: string
-  unit: string
-  quantity?: number
-  unit_price?: number
-  code?: string
-}
-
-export interface UpdateConceptInput {
-  description?: string
-  quantity?: number
-  unit_price?: number
-  unit?: string
-  code?: string
-}
-
-export interface ConceptRow {
-  id: string
-  chapter_id: string
-  code: string | null
-  description: string
-  unit: string
-  quantity: number
-  unit_price: number
-  is_locked: number // 0 | 1 — SQLite has no boolean
-  locked_at: string | null
-  position: number
-  created_at: string
-  updated_at: string
-}
+import type { CreateConceptInput, ConceptRow, UpdateConceptInput } from '../../../shared/types'
 
 // ─── Repository ───────────────────────────────────────────────────────────────
 
