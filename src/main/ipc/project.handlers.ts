@@ -14,9 +14,10 @@
 
 import { ipcMain, dialog, BrowserWindow } from 'electron'
 import Database from 'better-sqlite3'
-import path from 'path'
 import { DatabaseManager } from '../db/DatabaseManager'
 import { ProjectRepository } from '../db/repositories/ProjectRepository'
+import { RecentProjectsRepository } from '../db/repositories/RecentProjectsRepository'
+import type { AppDatabaseManager } from '../db/AppDatabaseManager'
 
 // ─── Estado compartido ────────────────────────────────────────────────────────
 //
@@ -24,6 +25,18 @@ import { ProjectRepository } from '../db/repositories/ProjectRepository'
 // Exportamos el getter para que los demás handlers puedan acceder al mismo db.
 
 let _manager: DatabaseManager | null = null
+
+// Reference to the app-level database manager, set from index.ts at startup.
+let _appManager: AppDatabaseManager | null = null
+
+export function setAppManagerForProjects(manager: AppDatabaseManager): void {
+  _appManager = manager
+}
+
+function getRecentRepo(): RecentProjectsRepository | null {
+  if (!_appManager) return null
+  return new RecentProjectsRepository(_appManager.getDb())
+}
 
 export function getCurrentDb(): Database.Database {
   if (!_manager) {
@@ -85,10 +98,17 @@ export function registerProjectHandlers(): void {
       const manager = openManager(filePath)
       const repo = new ProjectRepository(manager.getDb())
 
-      repo.createProject({
+      const projectInfo = repo.createProject({
         title: input.title,
         client: input.client,
         description: input.description
+      })
+
+      // Record in recent projects so it appears on the landing page
+      getRecentRepo()?.upsert({
+        file_path: filePath,
+        title: projectInfo.title,
+        client: projectInfo.client
       })
 
       return { filePath }
@@ -116,6 +136,15 @@ export function registerProjectHandlers(): void {
     const manager = openManager(filePath)
     const repo = new ProjectRepository(manager.getDb())
     const projectInfo = repo.getProjectInfo()
+
+    // Record in recent projects so it floats to the top of the landing page
+    if (projectInfo) {
+      getRecentRepo()?.upsert({
+        file_path: filePath,
+        title: projectInfo.title,
+        client: projectInfo.client
+      })
+    }
 
     return { filePath, projectInfo }
   })
