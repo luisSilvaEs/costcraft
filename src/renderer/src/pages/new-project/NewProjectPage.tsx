@@ -1,3 +1,7 @@
+import { Navigate } from 'react-router'
+
+// /projects/new redirects to the landing page.
+// The "New project" dialog is handled directly in ProjectsPage.
 export default function NewProjectPage() {
-  return <div className="p-8 text-2xl font-bold">New Project</div>
+  return <Navigate to="/projects" replace />
 }

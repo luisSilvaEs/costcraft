@@ -1,3 +1,9 @@
+// Placeholder for View B — budget workspace.
+// Will be implemented in the next iteration.
 export default function ProjectPage() {
-  return <div className="p-8 text-2xl font-bold">Project Detail</div>
+  return (
+    <div className="flex h-screen items-center justify-center text-muted-foreground">
+      View B — coming soon
+    </div>
+  )
 }
