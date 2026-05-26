@@ -97,6 +97,7 @@ export interface ConceptRow {
   quantity: number
   unit_price: number
   is_locked: number // 0 | 1  (SQLite no tiene boolean nativo)
+  locked_at: string | null
   position: number
   created_at: string
   updated_at: string
@@ -214,4 +215,16 @@ export interface CreateProjectResult {
 
 export interface DeleteResult {
   deleted: boolean
+}
+
+// ─── App — Recent Projects ────────────────────────────────────────────────────
+//
+// Rows from app.db — the app-level database separate from .presupuesto files.
+
+export interface RecentProjectRow {
+  id: number
+  file_path: string
+  title: string
+  client: string | null
+  last_opened_at: string // ISO timestamp
 }

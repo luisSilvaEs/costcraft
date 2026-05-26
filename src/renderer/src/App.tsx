@@ -1,6 +1,6 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router'
 import ProjectsPage from '@/pages/projects/ProjectsPage'
-import ProjectPage from '@/pages/project/ProjectPage'
+import ProjectDetailPage from '@renderer/pages/project/ProjectDetailPage'
 import NewProjectPage from '@/pages/new-project/NewProjectPage'
 
 export default function App() {
@@ -10,7 +10,7 @@ export default function App() {
         <Route path="/" element={<Navigate to="/projects" replace />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/projects/new" element={<NewProjectPage />} />
-        <Route path="/projects/:id" element={<ProjectPage />} />
+        <Route path="/projects/:id" element={<ProjectDetailPage />} />
       </Routes>
     </HashRouter>
   )

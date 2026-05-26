@@ -98,7 +98,7 @@ export class RecentProjectsRepository {
    * pruned before returning the list, so the UI never shows stale paths.
    */
   getAll(): RecentProjectRow[] {
-    this.pruneStaleEntries()
+    //this.pruneStaleEntries()
 
     return this.db
       .prepare(

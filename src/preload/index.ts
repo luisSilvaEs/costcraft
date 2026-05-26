@@ -35,7 +35,8 @@ import type {
   ExecutionEntryRow,
   ExecutionSummary,
   CreateExecutionEntryInput,
-  DeleteResult
+  DeleteResult,
+  RecentProjectRow
 } from '../shared/types'
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
@@ -53,6 +54,20 @@ async function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
 // ─── API expuesta al renderer ─────────────────────────────────────────────────
 
 const api = {
+  // ── App (recent projects) ──────────────────────────────────────────────────
+
+  app: {
+    /** Returns recently opened/created projects sorted by last opened date */
+    getRecentProjects: () => invoke<RecentProjectRow[]>('app:get-recent-projects'),
+
+    /** Removes a single entry from the recent list by file path */
+    removeRecentProject: (file_path: string) =>
+      invoke<{ removed: boolean }>('app:remove-recent-project', file_path),
+
+    /** Removes entries whose .presupuesto file no longer exists on disk */
+    pruneRecentProjects: () => invoke<{ pruned: number }>('app:prune-recent-projects')
+  },
+
   // ── Proyecto ───────────────────────────────────────────────────────────────
 
   project: {
@@ -62,6 +77,10 @@ const api = {
 
     /** Abre un archivo .presupuesto existente (abre diálogo Abrir) */
     open: () => invoke<OpenProjectResult | null>('project:open'),
+
+    /** Abre un archivo .presupuesto directamente por su ruta, sin diálogo */
+    openByPath: (filePath: string) =>
+      invoke<OpenProjectResult | null>('project:open-by-path', filePath),
 
     /** Cierra el proyecto actualmente abierto */
     close: () => invoke<void>('project:close'),

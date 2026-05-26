@@ -2,6 +2,18 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { AppDatabaseManager } from './db/AppDatabaseManager'
+import { registerProjectHandlers, setAppManagerForProjects } from './ipc/project.handlers'
+import { registerBudgetHandlers } from './ipc/budget.handlers'
+import { registerExecutionHandlers } from './ipc/execution.handlers'
+import { registerAppHandlers, setAppManager } from './ipc/app.handlers'
+
+// ─── App-level database ───────────────────────────────────────────────────────
+//
+// Initialized once when the app is ready and kept open for the lifetime of
+// the process. Closed gracefully on quit.
+
+let _appDbManager: AppDatabaseManager | null = null
 
 function createWindow(): void {
   // Create the browser window.
@@ -52,8 +64,26 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  // ── Initialize app-level database ─────────────────────────────────────────
+  //
+  // app.getPath('userData') resolves to:
+  //   macOS:   ~/Library/Application Support/costcraft
+  //   Windows: %APPDATA%\costcraft
+  //   Linux:   ~/.config/costcraft
+
+  _appDbManager = new AppDatabaseManager(app.getPath('userData'))
+  _appDbManager.open()
+
+  // Share the manager with handlers that need it
+  setAppManager(_appDbManager)
+  setAppManagerForProjects(_appDbManager)
+
+  // ── Register IPC handlers ──────────────────────────────────────────────────
+
+  registerAppHandlers()
+  registerProjectHandlers()
+  registerBudgetHandlers()
+  registerExecutionHandlers()
 
   createWindow()
 
@@ -70,6 +100,18 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
+  }
+})
+
+// ─── Graceful shutdown ────────────────────────────────────────────────────────
+//
+// Close the app-level database before the process exits so SQLite can flush
+// any pending writes and release the file lock cleanly.
+
+app.on('will-quit', () => {
+  if (_appDbManager) {
+    _appDbManager.close()
+    _appDbManager = null
   }
 })
 

@@ -149,6 +149,33 @@ export function registerProjectHandlers(): void {
     return { filePath, projectInfo }
   })
 
+  // ── project:open-by-path ────────────────────────────────────────────────────
+  //
+  // Opens a .presupuesto file directly by its path, without showing a dialog.
+  // Used when the user clicks a recent project on the landing page.
+  //
+  // Payload: filePath: string
+  // Retorna: { filePath: string, projectInfo: ProjectInfo } | null
+
+  ipcMain.handle('project:open-by-path', async (_event, filePath: string) => {
+    if (!filePath) return null
+
+    const manager = openManager(filePath)
+    const repo = new ProjectRepository(manager.getDb())
+    const projectInfo = repo.getProjectInfo()
+
+    // Update last_opened_at in recent projects
+    if (projectInfo) {
+      getRecentRepo()?.upsert({
+        file_path: filePath,
+        title: projectInfo.title,
+        client: projectInfo.client
+      })
+    }
+
+    return { filePath, projectInfo }
+  })
+
   // ── project:close ───────────────────────────────────────────────────────────
   //
   // Cierra la conexión al archivo actual.

@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import { FolderOpen, FilePlus } from 'lucide-react'
+import { FolderOpen, FilePlus, Clock, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -11,8 +11,25 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import type { RecentProjectRow } from '../../../../shared/types'
 
-export default function ProjectsPage() {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatRelativeDate(isoTimestamp: string): string {
+  const date = new Date(isoTimestamp)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  if (diffDays === 0) return 'Today'
+  if (diffDays === 1) return 'Yesterday'
+  if (diffDays < 7) return `${diffDays} days ago`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`
+  return `${Math.floor(diffDays / 365)} years ago`
+}
+
+const ProjectsPage = () => {
   const navigate = useNavigate()
 
   // Controls the "New project" dialog visibility
@@ -25,20 +42,53 @@ export default function ProjectsPage() {
   // Tracks async operations to disable buttons during processing
   const [loading, setLoading] = useState(false)
 
+  // Recent projects loaded from app.db
+  const [recents, setRecents] = useState<RecentProjectRow[]>([])
+
+  // Load recent projects on mount
+  useEffect(() => {
+    window.api.app.getRecentProjects().then(setRecents).catch(console.error)
+  }, [])
+
   // ── Open existing project ──────────────────────────────────────────────────
 
   async function handleOpen(): Promise<void> {
     setLoading(true)
     try {
-      const filePath = await window.api.project.open()
+      const result = await window.api.project.open()
 
       // User cancelled the native file dialog — do nothing
-      if (!filePath) return
+      if (!result) return
 
       navigate('/projects/1')
     } finally {
       setLoading(false)
     }
+  }
+
+  // ── Open a recent project directly (no dialog) ─────────────────────────────
+
+  async function handleOpenRecent(filePath: string): Promise<void> {
+    setLoading(true)
+    try {
+      const result = await window.api.project.openByPath(filePath)
+
+      if (!result) return
+
+      navigate('/projects/1')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ── Remove a recent project from the list ──────────────────────────────────
+
+  async function handleRemoveRecent(e: React.MouseEvent, filePath: string): Promise<void> {
+    // Prevent the click from bubbling up to the card's onClick
+    e.stopPropagation()
+
+    await window.api.app.removeRecentProject(filePath)
+    setRecents((prev) => prev.filter((r) => r.file_path !== filePath))
   }
 
   // ── Create new project ─────────────────────────────────────────────────────
@@ -109,6 +159,51 @@ export default function ProjectsPage() {
         </Button>
       </div>
 
+      {/* Recent projects list */}
+      {recents.length > 0 && (
+        <div className="w-full max-w-md">
+          <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            Recent projects
+          </div>
+
+          <ul className="flex flex-col gap-1">
+            {recents.map((recent) => (
+              <li key={recent.file_path}>
+                <button
+                  onClick={() => handleOpenRecent(recent.file_path)}
+                  disabled={loading}
+                  className="group relative flex w-full cursor-pointer items-center justify-between rounded-md border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {/* Project info */}
+                  <div className="min-w-0 flex-1 pr-8">
+                    <p className="truncate text-sm font-medium">{recent.title}</p>
+                    {recent.client && (
+                      <p className="truncate text-xs text-muted-foreground">{recent.client}</p>
+                    )}
+                  </div>
+
+                  {/* Last opened date */}
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {formatRelativeDate(recent.last_opened_at)}
+                  </span>
+
+                  {/* Remove button — visible on hover */}
+                  <span
+                    role="button"
+                    aria-label="Remove from recents"
+                    onClick={(e) => handleRemoveRecent(e, recent.file_path)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* New project dialog */}
       <Dialog open={newDialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="sm:max-w-md">
@@ -158,3 +253,5 @@ export default function ProjectsPage() {
     </div>
   )
 }
+
+export default ProjectsPage
