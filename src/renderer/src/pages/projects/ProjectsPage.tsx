@@ -16,7 +16,11 @@ import type { RecentProjectRow } from '../../../../shared/types'
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatRelativeDate(isoTimestamp: string): string {
-  const date = new Date(isoTimestamp)
+  // SQLite stores timestamps without timezone suffix — treat them as UTC
+  const normalized = isoTimestamp.endsWith('Z')
+    ? isoTimestamp
+    : isoTimestamp.replace(' ', 'T') + 'Z'
+  const date = new Date(normalized)
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
@@ -47,7 +51,13 @@ const ProjectsPage = () => {
 
   // Load recent projects on mount
   useEffect(() => {
-    window.api.app.getRecentProjects().then(setRecents).catch(console.error)
+    window.api.app
+      .getRecentProjects()
+      .then((data) => {
+        console.log('recents:', data)
+        setRecents(data)
+      })
+      .catch(console.error)
   }, [])
 
   // ── Open existing project ──────────────────────────────────────────────────
